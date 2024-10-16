@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八数码游戏</title>
+    <style>
+        #game {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            margin: 20px auto;
+            width: 310px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .empty {
+            background-color: #fff;
+        }
+        #controls, #info {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game"></div>
+    <div id="controls">
+        <button onclick="startGame()">开始新游戏</button>
+        <button onclick="resetGame()">重置</button>
+    </div>
+    <div id="info">
+        <p>步数: <span id="moves">0</span></p>
+    </div>
+    <div id="message" style="text-align: center; margin-top: 20px;"></div>
+
+    <script>
+        let board = [1,2,3,8,0,4,7,6,5];
+        const target = [1,2,3,8,0,4,7,6,5];
+        let emptyIndex = 4;
+        let moves = 0;
+
+        function startGame() {
+            shuffleBoard();
+            renderBoard();
+            moves = 0;
+            updateMoves();
+            document.getElementById('message').innerText = '';
+        }
+
+        function resetGame() {
+            board = [1,2,3,8,0,4,7,6,5];
+            emptyIndex = 4;
+            moves = 0;
+            renderBoard();
+            updateMoves();
+            document.getElementById('message').innerText = '';
+        }
+
+        function shuffleBoard() {
+            for (let i = 0; i < 1000; i++) {
+                const possibleMoves = getPossibleMoves();
+                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                swapCells(emptyIndex, randomMove);
+                emptyIndex = randomMove;
+            }
+        }
+
+        function getPossibleMoves() {
+            const row = Math.floor(emptyIndex / 3);
+            const col = emptyIndex % 3;
+            const possibleMoves = [];
+
+            if (row > 0) possibleMoves.push(emptyIndex - 3);
+            if (row < 2) possibleMoves.push(emptyIndex + 3);
+            if (col > 0) possibleMoves.push(emptyIndex - 1);
+            if (col < 2) possibleMoves.push(emptyIndex + 1);
+
+            return possibleMoves;
+        }
+
+        function renderBoard() {
+            const gameDiv = document.getElementById('game');
+            gameDiv.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (board[i] === 0) {
+                    cell.classList.add('empty');
+                } else {
+                    cell.innerText = board[i];
+                    cell.onclick = () => moveCell(i);
+                }
+                gameDiv.appendChild(cell);
+            }
+        }
+
+        function moveCell(index) {
+            if (isAdjacent(index, emptyIndex)) {
+                swapCells(index, emptyIndex);
+                emptyIndex = index;
+                moves++;
+                updateMoves();
+                renderBoard();
+                checkWin();
+            }
+        }
+
+        function swapCells(index1, index2) {
+            [board[index1], board[index2]] = [board[index2], board[index1]];
+        }
+
+        function isAdjacent(index1, index2) {
+            const row1 = Math.floor(index1 / 3);
+            const col1 = index1 % 3;
+            const row2 = Math.floor(index2 / 3);
+            const col2 = index2 % 3;
+            return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1;
+        }
+
+        function updateMoves() {
+            document.getElementById('moves').innerText = moves;
+        }
+
+        function checkWin() {
+            if (JSON.stringify(board) === JSON.stringify(target)) {
+                document.getElementById('message').innerText = `恭喜你赢了！总步数: ${moves}`;
+            }
+        }
+
+        resetGame();
+    </script>
+</body>
+</html>
